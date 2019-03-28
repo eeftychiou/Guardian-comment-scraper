@@ -12,19 +12,21 @@ if __name__ == '__main__':
 
 def saveComments(format, comments):
     print format
+    fileName = 'comments-{%i}.%s'%(len(comments[0]),format)
+    outFile = open(fileName, 'wb')
+
+    if format=='csv':
+        keys = comments[0][0].keys()
+        w = csv.DictWriter(outFile, keys)
+        w.writeheader()
+
     for i, comment in enumerate(comments):
         if format == 'json' or format is None:
-            fileName = 'comments-{0}.json'.format(i)
-            outFile = open(fileName,'w')
+
             json.dump(comment, outFile, indent=4)
             outFile.close()
         elif format == 'csv':
-            keys = comment[0].keys()
-            fileName = 'comments-{0}.csv'.format(i)
-            with open(fileName, 'w') as f:
-                w = csv.DictWriter(f, keys)
-                w.writeheader()
-                w.writerows(comment)
+            w.writerows(comment)
 
 
 fileOrUrl = args.source

@@ -24,7 +24,7 @@ def scrapeComments(url):
     else:
         totalPages = 1
 
-    def getComments(url):
+    def getComments(url, page):
         soup = getHTML(url)
         print 'Fetching {0}'.format(url)
         commentArray = []
@@ -50,14 +50,36 @@ def scrapeComments(url):
 
             commentArray.append(commentObj)
         commentArray = commentArray[::-1]
-        return commentArray
+
+        paginationBtns = soup.find_all('a', class_='pagination__action')
+        LastPaginationBtn = soup.find('a', class_='pagination__action--last')
+
+        if LastPaginationBtn is not None:
+            totalPages = int(LastPaginationBtn['data-page'])
+        elif paginationBtns:
+            totalPages = int(paginationBtns[-1]['data-page'])
+        else:
+            totalPages = 1
+
+        done=False
+        if page >= totalPages:
+           done=True
+
+
+        return commentArray,done
 
     allComments = []
 
-    for i in range(totalPages, 0, -1):
-        params = urllib.urlencode({'page': i})
+    done = False
+    page = 1
+    totalPages = 0
+    while not done:
+        params = urllib.urlencode({'page': page})
         url = '{0}?={1}'.format(commentUrl, params)
-        pageComments = getComments(url)
+
+        pageComments, done = getComments(url, page)
         allComments = allComments + pageComments
+
+        page = page + 1
 
     return allComments
